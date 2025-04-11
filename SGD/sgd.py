@@ -42,7 +42,7 @@ class SGD:
         self.n_model = self.X_model.shape[1]
         
         self.w = np.zeros(self.n_model)
-        self.w_star = np.linalg.solve(self.X_model.T @ self.X_model, self.X_model.T @ self.y)
+        self.w_star = np.linalg.pinv(self.X_model.T @ self.X_model) @ self.X_model.T @ self.y
         self.F_star = self.F(self.w_star)
 
         self.L = self.compute_L()
