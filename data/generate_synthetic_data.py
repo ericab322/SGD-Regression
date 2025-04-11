@@ -53,12 +53,13 @@ def generate_training_data_unfixed(m=100, n=2, noise=0.01, model_type='linear', 
         return X, y, {'A': A, 'b': b}
 
     elif model_type == 'polynomial':
+        A = np.random.normal(0, 1, size=(n,))
+        b = np.random.normal()
         poly = PolynomialFeatures(degree=degree, include_bias=False)
         X_poly = poly.fit_transform(X)
-        A = np.random.normal(0, 1, size=X_poly.shape[1])
-        b = np.random.normal()
-        y = X_poly @ A + np.random.normal(0, noise, size=m)
-        return X_poly, y, {'A': A, 'b': b, 'degree': degree}
+        A_full = np.random.normal(0, 1, size=X_poly.shape[1]) 
+        y = X_poly @ A_full + b + np.random.normal(0, noise, size=m)
+        return X, y, {'A': A_full, 'b': b}
 
     elif model_type == 'nonlinear':
         b = np.random.normal()
