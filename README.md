@@ -1,4 +1,3 @@
-# sgd
 # Theoretically-Grounded SGD for Regression Models
 
 This project explores and implements stochastic gradient descent (SGD) methods for linear, polynomial, and nonlinear regression, with a focus on theoretically-motivated stepsize strategies and convergence analysis. The framework is currently able to support experiments on synthetic data.
