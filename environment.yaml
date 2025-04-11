@@ -1,0 +1,9 @@
+name: sgd-regression
+channels:
+  - defaults
+dependencies:
+  - python=3.10
+  - numpy
+  - scikit-learn
+  - matplotlib 
+  - jupyter 
