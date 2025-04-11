@@ -12,7 +12,7 @@ This project explores and implements stochastic gradient descent (SGD) methods f
   - Diminishing stepsize
 - Generate synthetic datasets under various settings (linear, polynomial, nonlinear, cosine-based on sphere)
 
-## 🛠️ Requirements
+## Requirements
 
 - Python 3.8+
 - numpy
