@@ -30,10 +30,7 @@ This project requires specific dependencies to ensure compatibility and reproduc
    ```bash
    conda env create -f environment.yaml
 3. **Activate the Environment**
-  Once the environment is created, activate it using the following command:
+    Once the environment is created, activate it using the following command:
 
-  ```bash
-  conda activate sgd-regression
-4. **Activate the Environment**
-  Once the environment is created, activate it using the following command:
-conda activate multiclass-classification
+    ```bash
+    conda activate sgd-regression
