@@ -49,6 +49,7 @@ class SGD:
         self.c = self.compute_c()
         self.mu, self.mu_G, self.M, self.M_V, self.M_G = self.estimate_parameters()
         self.fixed_alpha = self.compute_fixed_stepsize()
+        self.beta, self.gamma = self.compute_diminishing_stepsize()
     
     def generate_polynomial_features(self, X, degree):
         """
@@ -208,7 +209,6 @@ class SGD:
             float: The computed fixed stepsize for the SGD algorithm.
         """
         fixed_alpha = (self.mu / (self.L * self.M_G))
-        print(f"Parameters: L = {self.L}, c = {self.c}, M_V = {self.M_V}, mu = {self.mu}, mu_G = {self.mu_G}, M_G = {self.M_G}, M = {self.M} \n Fixed Stepsize: alpha_bar = {fixed_alpha}")
         return fixed_alpha
     
     def compute_halving_stepsize(self):
@@ -228,7 +228,6 @@ class SGD:
     def compute_diminishing_stepsize(self):
         gamma = ((self.L * self.M_G) / (self.c * self.mu))
         beta = (1 / (self.c * self.mu)) + (self.mu / (self.L * self.M_G))
-        print(f"Diminishing Stepsize Parameters: beta = {beta:.4f}, gamma = {gamma:.4f}")
         return beta, gamma
     
     def optimize(self, stepsize_type='fixed', batch_size=1):
@@ -278,7 +277,6 @@ class SGD:
                     halving_points.append(k_r)
                     current_alpha = max(current_alpha / 2, min_alpha)
                     current_F_alpha = (current_alpha * self.L * self.M) / (2 * self.mu)  
-                    print(f"halving stepsize to {current_alpha:.10f}")
                 alpha_k = current_alpha
             self.w = w
             if self.batch_size > 1:
