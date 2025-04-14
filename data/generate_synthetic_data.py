@@ -97,7 +97,7 @@ def generate_training_data_fixed(m=100, n=2, noise=0.01, degree=2, model_type='l
         eta_i = np.random.normal(0, noise, size=(m,))
         y = X @ A + b + eta_i
         true_coefficients = {'A': A, 'b': b}
-        return X, y, true_coefficients
+        return X, None, y, true_coefficients
         
     elif model_type == 'polynomial':
         poly = PolynomialFeatures(degree=degree, include_bias=False)
@@ -107,14 +107,14 @@ def generate_training_data_fixed(m=100, n=2, noise=0.01, degree=2, model_type='l
         A = 0.1 * np.arange(1, d + 1)
         b = 1.0  
         y = X_poly @ A + b + np.random.normal(0, noise, size=m)
-        return X_poly, y, {'A': A, 'b': b, 'degree': degree}
+        return X, X_poly, y, {'A': A, 'b': b, 'degree': degree}
     
     elif model_type == 'nonlinear':
         b = 1.0
         eta_i = np.random.normal(0, noise, size=(m,))
         y = nonlinear_func(X[:, 0]) + b + eta_i
         true_coefficients = {'function': nonlinear_func.__name__, 'b': b}
-        return X, y, true_coefficients
+        return X, None, y, true_coefficients
     
     else:
         raise ValueError("model_type must be 'linear', 'polynomial', or 'nonlinear'")
