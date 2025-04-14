@@ -50,24 +50,22 @@ def generate_training_data_unfixed(m=100, n=2, noise=0.01, model_type='linear', 
         A = np.random.normal(0, 1, size=n)
         b = np.random.normal()
         y = X @ A + b + np.random.normal(0, noise, size=m)
-        return X, y, {'A': A, 'b': b}
+        return X, None, y, {'A': A, 'b': b}
 
     elif model_type == 'polynomial':
-        A = np.random.normal(0, 1, size=(n,))
-        b = np.random.normal()
         poly = PolynomialFeatures(degree=degree, include_bias=False)
         X_poly = poly.fit_transform(X)
         X_poly /= np.max(np.abs(X_poly), axis=0)
-        A_full = np.random.normal(0, 1, size=X_poly.shape[1]) 
-        y = X_poly @ A_full + b + np.random.normal(0, noise, size=m)
-        return X_poly, y, {'A': A_full, 'b': b}
-
+        A = np.random.normal(0, 1, size=X_poly.shape[1])
+        b = np.random.normal()
+        y = X_poly @ A + b + np.random.normal(0, noise, size=m)
+        return X, X_poly, y, {'A': A, 'b': b}
 
     elif model_type == 'nonlinear':
         b = np.random.normal()
         x = X[:, 0]
         y = nonlinear_func(x) + b + np.random.normal(0, noise, size=m)
-        return X, y, {'function': nonlinear_func.__name__, 'b': b}
+        return X, None, y, {'function': nonlinear_func.__name__, 'b': b}
 
     else:
         raise ValueError("model_type must be 'linear', 'polynomial', or 'nonlinear'")

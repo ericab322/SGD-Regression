@@ -13,7 +13,7 @@ class SGD:
         - Objective: F(w) = (1/m) Σ f_i(w)
         - Gradient: ∇f_i(w) = (w^T x_i - y_i) x_i
     """
-    def __init__(self, X, y, num_iterations=1000, noise=0.01):
+    def __init__(self, X, y, num_iterations=1000, noise=0.01, batch_size=1):
         """
         Initializes the SGD model with data and hyperparameters.
 
@@ -28,6 +28,7 @@ class SGD:
         self.m, self.n = self.X.shape
         self.noise = noise
         self.num_iterations = num_iterations
+        self.batch_size = batch_size 
 
         self.w = np.zeros(self.n)
         self.w_star = np.linalg.pinv(self.X) @ self.y
@@ -89,7 +90,7 @@ class SGD:
         """
         return (1/self.m) * sum(self.grad_f_i(w, i) for i in range(self.m))
 
-    def stochastic_grad(self):
+    def stochastic_grad(self,w):
         """
         Returns a stochastic gradient estimate.
 
@@ -97,9 +98,9 @@ class SGD:
             Gradient at a random sample.
         """
         i = np.random.randint(0, self.m)
-        return self.grad_f_i(self.w, i)
+        return self.grad_f_i(w, i)
 
-    def mini_batch_grad(self):
+    def mini_batch_grad(self,w):
         """
         Computes the mini-batch gradient.
 
@@ -107,7 +108,7 @@ class SGD:
             Average gradient over the mini-batch.
         """
         indices = np.random.choice(self.m, self.batch_size, replace=False)
-        return (1 / self.batch_size) * sum(self.grad_f_i(self.w, i) for i in indices)
+        return (1 / self.batch_size) * sum(self.grad_f_i(w, i) for i in indices)
 
     def compute_L(self, num_samples=1000):
         """
@@ -201,8 +202,7 @@ class SGD:
             Tuple: final weights, objective history, gradient norm history, distance to optimal.
         """
         self.batch_size = batch_size
-        self.w = np.zeros(self.n)
-        w = self.w
+        w = np.zeros(self.n)
 
         if stepsize_type == 'fixed':
             alpha = self.fixed_alpha
@@ -240,12 +240,11 @@ class SGD:
                     current_F_alpha = (current_alpha * self.L * self.M) / (2 * self.mu)
                 alpha_k = current_alpha
 
-            self.w = w
-            g_k = self.mini_batch_grad() if self.batch_size > 1 else self.stochastic_grad()
+            g_k = self.mini_batch_grad(w) if self.batch_size > 1 else self.stochastic_grad(w)
             w -= alpha_k * g_k
 
             obj_history.append(self.F(w))
             grad_norm_history.append(np.linalg.norm(self.grad_F(w)) ** 2)
             dist_to_opt_history.append(np.linalg.norm(w - self.w_star) ** 2)
-
+        self.w = w
         return w, np.array(obj_history), np.array(grad_norm_history), np.array(dist_to_opt_history)
