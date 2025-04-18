@@ -22,6 +22,7 @@ class SGD:
             y: Target vector of shape (m,).
             num_iterations: Number of SGD iterations.
             noise: Estimated noise level in the labels.
+            batch_size: Size of mini-batch for SGD. 1 = stochastic gradient.
         """
         self.X = np.hstack([np.ones((X.shape[0], 1)), X])  # Add bias term
         self.y = y.flatten()
@@ -140,7 +141,7 @@ class SGD:
         eigenvalues = np.linalg.eigvalsh(H)
         return max(min(eigenvalues), 1e-6)
 
-    def estimate_parameters(self, num_samples=200):
+    def estimate_parameters(self):
         """
         Estimates gradient variance and smoothness parameters.
 
