@@ -44,34 +44,14 @@ def generate_training_data_unfixed(m=100, n=2, noise=0.01, model_type='linear', 
         y: Target values
         true_coefficients: Dictionary of true parameters
     """
-    X = np.random.normal(2, 1, size=(m, n))
-
-    if model_type == 'linear':
-        A = np.random.normal(0, 1, size=n)
-        b = np.random.normal()
-        y = X @ A + b + np.random.normal(0, noise, size=m)
-        return X, None, y, {'A': A, 'b': b}
-
-    elif model_type == 'polynomial':
-        poly = PolynomialFeatures(degree=degree, include_bias=False)
-        X_poly = poly.fit_transform(X)
-        X_poly /= np.max(np.abs(X_poly), axis=0)
-        A = np.random.normal(0, 1, size=X_poly.shape[1])
-        b = np.random.normal()
-        y = X_poly @ A + b + np.random.normal(0, noise, size=m)
-        return X, X_poly, y, {'A': A, 'b': b}
-
-    elif model_type == 'nonlinear':
-        b = np.random.normal()
-        x = X[:, 0]
-        y = nonlinear_func(x) + b + np.random.normal(0, noise, size=m)
-        return X, None, y, {'function': nonlinear_func.__name__, 'b': b}
-
-    else:
-        raise ValueError("model_type must be 'linear', 'polynomial', or 'nonlinear'")
+    X = np.random.normal(0, 1, size=(m, n))
+    A = np.random.normal(0, 1, size=n)
+    b = np.random.normal()
+    y = X @ A + b + np.random.normal(0, noise, size=m)
+    return X, None, y, {'A': A, 'b': b}
 
 
-def generate_training_data_fixed(m=100, n=2, noise=0.01, degree=2, model_type='linear', nonlinear_func=None):
+def generate_training_data_fixed(m=100, n=2, noise=0.01):
     """
     Generates data with fixed coefficients for:
         - Linear: y = Ax + b + noise
@@ -82,40 +62,43 @@ def generate_training_data_fixed(m=100, n=2, noise=0.01, degree=2, model_type='l
         m: Number of samples
         n: Number of features (must be 1 for nonlinear)
         noise: Std dev of Gaussian noise
-        degree: Degree of polynomial (only used for polynomial)
-        model_type: 'linear' | 'polynomial' | 'nonlinear'
-        nonlinear_func: function like np.sin, np.exp (only used for nonlinear)
     Returns:
         X: Input data
         y: Output data
         true_coefficients: Dictionary of true coefficients used for generation
     """
-    X = np.random.normal(loc=2, scale=1, size=(m, n))
-    if model_type == 'linear':
-        A = np.array([1.0, 2.0])[:n]  
-        b = 1.0                       
-        eta_i = np.random.normal(0, noise, size=(m,))
-        y = X @ A + b + eta_i
-        true_coefficients = {'A': A, 'b': b}
-        return X, None, y, true_coefficients
-        
-    elif model_type == 'polynomial':
-        poly = PolynomialFeatures(degree=degree, include_bias=False)
-        X_poly = poly.fit_transform(X)
-        d = X_poly.shape[1]
+    X = np.random.normal(loc=0, scale=1, size=(m, n))
+    A = np.array([1.0, 2.0])[:n]  
+    b = 1.0                       
+    eta_i = np.random.normal(0, noise, size=(m,))
+    y = X @ A + b + eta_i
+    true_coefficients = {'A': A, 'b': b}
+    return X, y, true_coefficients
 
-        A = 0.1 * np.arange(1, d + 1)
-        b = 1.0  
-        y = X_poly @ A + b + np.random.normal(0, noise, size=m)
-        return X, X_poly, y, {'A': A, 'b': b, 'degree': degree}
+def transform_to_polynomial(X, degree=2, normalize=True):
+    """
+    Transforms input data to polynomial features of a given degree.
+    Args:
+        X: Input data
+        degree: Degree of polynomial features
+        normalize: If True, normalize the features
+    Returns:
+        X_poly: Transformed polynomial features
+    """
+    poly = PolynomialFeatures(degree=degree, include_bias=False)
+    X_poly = poly.fit_transform(X)
+    if normalize:
+        X_poly /= np.max(np.abs(X_poly), axis=0)
+    return X_poly
     
-    elif model_type == 'nonlinear':
-        b = 1.0
-        eta_i = np.random.normal(0, noise, size=(m,))
-        y = nonlinear_func(X[:, 0]) + b + eta_i
-        true_coefficients = {'function': nonlinear_func.__name__, 'b': b}
-        return X, None, y, true_coefficients
-    
-    else:
-        raise ValueError("model_type must be 'linear', 'polynomial', or 'nonlinear'")
+def transform_to_nonlinear(X, func=np.sin):
+    """
+    Transforms input data to nonlinear features using a given function.
+    Args:
+        X: Input data
+        func: Nonlinear function to apply
+    Returns
+        X_nonlinear: Transformed nonlinear features
+    """
+    return func(X)
     
