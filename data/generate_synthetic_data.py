@@ -88,7 +88,7 @@ def transform_to_polynomial(X, degree=2, normalize=True):
     poly = PolynomialFeatures(degree=degree, include_bias=False)
     X_poly = poly.fit_transform(X)
     if normalize:
-        X_poly /= np.max(np.abs(X_poly), axis=0)
+        X_poly = (X_poly - np.mean(X_poly, axis=0)) / np.std(X_poly, axis=0)
     return X_poly
     
 def transform_to_nonlinear(X, func=np.sin):
