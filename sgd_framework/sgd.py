@@ -32,11 +32,11 @@ class SGD:
         self.params = params
 
         if stepsize_type == 'fixed':
-            self.scheduler = FixedStepsize(params)
+            self.strategy = FixedStepsize(params)
         elif stepsize_type == 'diminishing':
-            self.scheduler = DiminishingStepsize(params)
+            self.strategy = DiminishingStepsize(params)
         else:
-            self.scheduler = HalvingStepsize(params, F_star=self.F_star)
+            self.strategy = HalvingStepsize(params, F_star=self.F_star)
         self.stepsize_type = stepsize_type
 
     def optimize(self):
@@ -49,8 +49,8 @@ class SGD:
         for k in range(self.num_iterations):
             f_val = self.model.F(w)
             if self.stepsize_type == 'halving':
-                self.scheduler.update(f_val, k)
-            alpha_k = self.scheduler.get(k)
+                self.strategy.update(f_val, k)
+            alpha_k = self.strategy.get(k)
 
             g_k = self.model.mini_batch_grad(w, self.batch_size) if self.batch_size > 1 else self.model.stochastic_grad(w)
             w -= alpha_k * g_k
