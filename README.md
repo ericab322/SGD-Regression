@@ -40,18 +40,4 @@ This project requires specific dependencies to ensure compatibility and reproduc
 
     ```bash
     conda activate sgd-regression
-
- ---
-
- ## Usage Example
-   from src.train import main
-
-  main(
-    X_train, y_train, X_test, y_test,
-    model_type="regression",  # or "nn"
-    stepsize_strategy="fixed",
-    hidden_dim=32,  # for NN only
-    log_path="results/my_experiment.csv",
-    metadata={"experiment": "test_run"}
-  )
     
