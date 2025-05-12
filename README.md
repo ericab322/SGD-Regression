@@ -1,20 +1,26 @@
-# Theoretically-Grounded SGD for Regression Models
+# Theoretically-Grounded SGD Framework
 
-This project explores and implements stochastic gradient descent (SGD) methods for linear, polynomial, and nonlinear regression, with a focus on theoretically-motivated stepsize strategies and convergence analysis. The framework is currently able to support experiments on synthetic data.
+This project explores and implements stochastic gradient descent (SGD) methods for convex and nonconvex objectives.
 
-## Project Goals
+## Features
 
-- Implement a custom, modular SGD framework for regression tasks
-- Support linear and polynomial feature expansions with customizable degree
-- Evaluate convergence behavior under different stepsize rules:
-  - **Fixed stepsize** 
-  - **Halving stepsize**
-  - **Diminishing stepsize**
-- Generate synthetic datasets under various settings:
+- Modular SGD framework for both convex (e.g., regression) and nonconvex (e.g., neural networks) objectives
+- Supports:
   - Linear regression
-  - Polynomial regression
-  - Nonlinear functions (e.g., `sin(x)`, `exp(x)`)
-  - Cosine labels on the unit sphere
+  - Polynomial regression (with configurable degree)
+  - Two-layer fully connected neural networks
+- Tracks convergence behavior using:
+  - **Fixed stepsize**
+  - **Diminishing stepsize**
+  - **Halving stepsize**
+- Automatically estimates and logs theoretical constants:
+  - `L` (Lipschitz smoothness)
+  - `c` (strong convexity)
+  - `mu`, `M`, `M_G` (gradient-related bounds)
+- Compatible with both synthetic and real-world datasets (e.g., CSV input)
+- Separate logs for:
+  - Experiment results (`experiment_log.csv`)
+  - Optimization parameters (`sgd_parameters_log.csv`)
 
 ---
 
@@ -34,3 +40,4 @@ This project requires specific dependencies to ensure compatibility and reproduc
 
     ```bash
     conda activate sgd-regression
+    
