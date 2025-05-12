@@ -6,6 +6,7 @@ def relu(x):
 def relu_derivative(x):
     return (x > 0).astype(float)
 
+# try iid gaussians with mean zero and variance 1
 class TwoLayerNNModel:
     def __init__(self, input_dim, hidden_dim=10):
         self.input_dim = input_dim
@@ -69,7 +70,7 @@ class TwoLayerNNModel:
     def F(self, X, y, w):
         # loss function
         preds = np.array([self.forward(x, w) for x in X])
-        return np.mean((preds - y) ** 2)
+        return np.mean((preds - y.flatten()) ** 2)
 
     def grad_F(self, X, y, w):
         # gradient of the loss function

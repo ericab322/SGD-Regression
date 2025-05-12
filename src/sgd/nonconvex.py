@@ -38,7 +38,10 @@ class NonConvexSGD:
                 grad = self.model.stochastic_grad(self.X, self.y, w)
             else:
                 grad = self.model.mini_batch_grad(self.X, self.y, w, self.batch_size)
-
+            clip_thresh = 5.0
+            grad_norm = np.linalg.norm(grad)
+            if grad_norm > clip_thresh:
+                grad = grad * (clip_thresh / grad_norm)
             w -= alpha_k * grad
 
             obj_history.append(self.model.F(self.X, self.y, w))
