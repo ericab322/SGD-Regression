@@ -21,7 +21,7 @@ def build_model(input_dim, width, depth):
     return nn.Sequential(*layers)
 
 # ---- Training function ----
-def run_training(X_train, y_train, X_test, y_test, width, depth, stepsize, epochs=500):
+def run_training(X_train, y_train, X_test, y_test, width, depth, stepsize, epochs=1000):
     model = build_model(X_train.shape[1], width, depth)
     optimizer = optim.SGD(model.parameters(), lr=stepsize)
     criterion = nn.MSELoss()
@@ -43,18 +43,18 @@ def run_training(X_train, y_train, X_test, y_test, width, depth, stepsize, epoch
 # ---- Global settings ----
 poly_degree = 3
 input_dim = 2
-noise_std = 0.01
+noise_std = 0.001
 num_trials = 5
 
 depths = [1, 5]
 widths = [1, 5, 10, 20, 50]
-stepsizes = [1e-3, 1e-2, 0.1]
-sample_sizes = [5, 8, 10, 20, 30, 50, 100, 200, 300, 500, 1000]
+stepsizes = [1e-3, 1e-2, 0.002336524216440747, 0.1]
+sample_sizes = [5, 8, 10, 20, 30, 50, 100, 200, 300, 500, 1000, 7000]
 
 # ---- Target function coefficients ----
 X_dummy = np.random.normal(0, 1, size=(10, input_dim))
 X_dummy_poly = transform_to_polynomial(X_dummy, degree=poly_degree, normalize=True)
-true_A = 0.001 * np.arange(1, X_dummy_poly.shape[1] + 1)
+true_A = 0.1 * np.arange(1, X_dummy_poly.shape[1] + 1)
 true_b = 1.0
 
 results = []
@@ -68,8 +68,8 @@ for d in depths:
                 grad_norms = []
                 test_losses = []
                 for seed in range(num_trials):
-                    np.random.seed(seed)
-                    torch.manual_seed(seed)
+                    np.random.seed(0)
+                    torch.manual_seed(0)
                     X_raw, _, _ = generate_training_data_fixed(m=n, n=input_dim, noise=noise_std)
                     X_poly = transform_to_polynomial(X_raw, degree=poly_degree, normalize=True)
                     y = X_poly @ true_A + true_b + np.random.normal(0, noise_std, size=X_poly.shape[0])

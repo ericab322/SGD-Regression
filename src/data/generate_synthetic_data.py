@@ -68,7 +68,7 @@ def generate_training_data_fixed(m=100, n=2, noise=0.01):
         true_coefficients: Dictionary of true coefficients used for generation
     """
     X = np.random.normal(loc=0, scale=1, size=(m, n))
-    A = np.array([1.0, 2.0])[:n]  
+    A = 0.01 * np.arange(1, n + 1)
     b = 1.0                       
     eta_i = np.random.normal(0, noise, size=(m,))
     y = X @ A + b + eta_i
@@ -101,4 +101,15 @@ def transform_to_nonlinear(X, func=np.sin):
         X_nonlinear: Transformed nonlinear features
     """
     return func(X)
+
+def generate_sphere_data(m, d, degree=3, noise=0.01):
+    X = np.random.randn(m, d)
+    X /= np.linalg.norm(X, axis=1, keepdims=True)  
+    X_poly = transform_to_polynomial(X, degree=degree, normalize=False)
+
+    A = 0.01 * np.arange(1, X_poly.shape[1] + 1)
+    b = 1.0
+    y = X_poly @ A + b + noise * np.random.randn(m)
+
+    return X, y, A, b
     

@@ -20,6 +20,7 @@ def run_experiment_and_log(
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
     results = {}
 
+    dist_hist = None
     if model_type == 'regression':
         from src.models.regression_model import RegressionModel
         from src.sgd.sgd import SGD
@@ -57,7 +58,7 @@ def run_experiment_and_log(
     else:
         raise ValueError(f"Unknown model_type: {model_type}")
 
-    # Main experiment result logging
+    # results logging
     results.update({
         "model_type": model_type,
         "stepsize_strategy": stepsize_strategy,
@@ -67,8 +68,9 @@ def run_experiment_and_log(
         "test_loss": test_loss,
         "train_loss": obj_hist[-1],
         "grad_norm": grad_hist[-1],
-        "dist_to_opt": dist_hist[-1],
+        "dist_to_opt": dist_hist[-1] if dist_hist else None
     })
+
 
     if metadata:
         results.update(metadata)
@@ -79,9 +81,6 @@ def run_experiment_and_log(
     else:
         df.to_csv(log_path, mode='a', header=False, index=False)
 
-    # -----------------------------
-    # Parameter logging (if available)
-    # -----------------------------
     if params:
         basename = os.path.basename(log_path).replace(".csv", "")
         param_log_path = os.path.join(os.path.dirname(log_path), f"{basename}_params.csv")

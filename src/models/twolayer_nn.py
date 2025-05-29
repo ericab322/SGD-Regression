@@ -45,7 +45,18 @@ class TwoLayerNNModel:
         h1 = W1 @ z0 + b1
         z1 = relu(h1)
         h2 = W2 @ z1 + b2
-        return h2.item()
+        return h2[0, 0]
+    
+    def forward_batch(self, X, w):
+        """
+        Vectorized forward pass for a batch of inputs X.
+        Returns predictions of shape (n_samples,)
+        """
+        W1, b1, W2, b2 = self.unpack_weights(w)
+        Z1 = X @ W1.T + b1.T       
+        A1 = relu(Z1)              
+        out = A1 @ W2.T + b2.T     
+        return out.flatten()  
     
     def backprop(self, w, x, y):
         W1, b1, W2, b2 = self.unpack_weights(w)
@@ -54,7 +65,7 @@ class TwoLayerNNModel:
         h1 = W1 @ x + b1
         z1 = relu(h1)
         h2 = W2 @ z1 + b2
-        pred = h2.item()
+        pred = h2[0, 0]
 
         error = 2 * (pred - y)
         dW2 = error * z1.T
@@ -69,7 +80,7 @@ class TwoLayerNNModel:
 
     def F(self, X, y, w):
         # loss function
-        preds = np.array([self.forward(x, w) for x in X])
+        preds = self.forward_batch(X, w)
         return np.mean((preds - y.flatten()) ** 2)
 
     def grad_F(self, X, y, w):

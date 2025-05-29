@@ -2,25 +2,33 @@ import numpy as np
 
 class RegressionModel:
     def __init__(self, X, y):
-        self.X = np.hstack([np.ones((X.shape[0], 1)), X])
+        """
+        Linear regression model with squared error loss.
+
+        Args:
+            X: Input data of shape (m, d).
+            y: Target values of shape (m,) or (m, 1).
+        """
+        self.X = np.hstack([np.ones((X.shape[0], 1)), X])  
         self.y = y.flatten()
         self.m, self.n = self.X.shape
-        self.w_star = np.linalg.pinv(self.X) @ self.y
+        self.w_star = np.linalg.pinv(self.X) @ self.y  
 
     def initialize_weights(self):
         """
         Initializes weights to zero.
+
         Returns:
-            Initial weights.
+            Initial weight vector of shape (n,).
         """
         return np.zeros(self.n)
 
     def f_i(self, w, i):
         """
-        Returns the loss for sample i.
+        Loss on a single sample.
 
         Args:
-            w: Current weights.
+            w: Weight vector.
             i: Index of sample.
 
         Returns:
@@ -30,64 +38,82 @@ class RegressionModel:
 
     def grad_f_i(self, w, i):
         """
-        Returns the gradient of the loss at sample i.
+        Gradient of loss at sample i.
 
         Args:
-            w: Current weights.
+            w: Weight vector.
             i: Index of sample.
 
         Returns:
-            Gradient vector.
+            Gradient vector of shape (n,).
         """
         return (self.X[i] @ w - self.y[i]) * self.X[i]
 
     def F(self, w):
         """
-        Computes the total objective (average loss).
+        Full objective (average loss over all samples).
 
         Args:
-            w: Current weights.
+            w: Weight vector.
 
         Returns:
-            Objective value.
+            Scalar average loss.
         """
         err = self.X @ w - self.y
         return 0.5 * np.mean(err ** 2)
 
     def grad_F(self, w):
         """
-        Computes the gradient of the objective.
+        Gradient of the full objective.
 
         Args:
-            w: Current weights.
+            w: Weight vector.
 
         Returns:
-            Full gradient vector.
+            Gradient vector of shape (n,).
         """
         return (1 / self.m) * (self.X.T @ (self.X @ w - self.y))
 
-    def stochastic_grad(self, w):
+    def stochastic_grad(self, w, X_sample, y_sample):
         """
-        Returns a stochastic gradient estimate.
+        Stochastic gradient for a single sample.
+
+        Args:
+            w: Weight vector.
+            X_sample: Sample input of shape (1, n).
+            y_sample: Sample target of shape (1,).
 
         Returns:
-            Gradient at a random sample.
+            Gradient vector of shape (n,).
         """
-        i = np.random.randint(0, self.m)
-        return self.grad_f_i(w, i)
+        x = X_sample[0]
+        y = y_sample[0]
+        return (x @ w - y) * x
 
-    def mini_batch_grad(self, w, batch_size):
+    def mini_batch_grad(self, w, batch_size, X_batch, y_batch):
         """
-        Computes the mini-batch gradient.
+        Mini-batch gradient over a batch.
+
+        Args:
+            w: Weight vector.
+            batch_size: Number of samples.
+            X_batch: Input batch of shape (batch_size, n).
+            y_batch: Target batch of shape (batch_size,).
 
         Returns:
-            Average gradient over the mini-batch.
+            Average gradient over the batch.
         """
-        indices = np.random.choice(self.m, batch_size, replace=False)
-        return (1 / batch_size) * sum(self.grad_f_i(w, i) for i in indices)
+        err = X_batch @ w - y_batch
+        return (1 / batch_size) * (X_batch.T @ err)
 
     def dist_to_opt(self, w):
         """
-        Computes the distance to the optimal weights.
+        Distance to the optimal solution.
+
+        Args:
+            w: Weight vector.
+
+        Returns:
+            Euclidean distance to w_star.
         """
         return np.linalg.norm(w - self.w_star)
