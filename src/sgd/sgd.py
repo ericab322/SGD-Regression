@@ -16,8 +16,14 @@ class SGD:
         self.noise = noise
         self.F_star = model.F(model.w_star)
 
-        estimator = ParameterEstimator(self.X, self.y, model, noise)
-        params = estimator.estimate_parameters()
+        # sythetic data or real data data
+        if hasattr(model, "dataset_name") and model.dataset_name != "synthetic":
+            estimator = ParameterEstimator(self.X, self.y, model)
+            params = estimator.estimate_parameters(use_empirical_noise=True)
+        else:
+            estimator = ParameterEstimator(self.X, self.y, model, noise=self.noise)
+            params = estimator.estimate_parameters(use_empirical_noise=False)
+
         self.params = params
 
         if stepsize_type == 'fixed':

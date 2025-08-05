@@ -9,6 +9,37 @@ class ParameterEstimator:
         self.w_init = model.initialize_weights()
         self.w_star = model.w_star
         
+    def compute_empirical_noise(self):
+        """
+        Computes empirical noise variance.
+        """
+        residuals = self.y - self.X @ self.w_star
+        return np.var(residuals)
+    
+    def empirical_moments(self, w=None):
+        """
+        Computes empirical moments for gradient variance and smoothness.
+        If w is None, uses initialized weights.
+        """
+        if w is None:
+            w = self.w_init
+        full_grad = self.model.grad_F(w)
+        grad_norm = np.linalg.norm(full_grad)
+
+        per_sample_grads = np.array([self.model.grad_f_i(w, i) for i in range(self.model.m)])
+        mean_grad = np.mean(per_sample_grads, axis=0)
+
+        mu = (full_grad @ mean_grad) / (grad_norm**2 + 1e-12)
+        mu_G = np.linalg.norm(mean_grad) / (grad_norm + 1e-12)
+
+        var_total = np.mean(np.sum((per_sample_grads - mean_grad)**2, axis=1))
+        M_V = max(0, var_total / (grad_norm**2 + 1e-12))
+        M = var_total - M_V * grad_norm**2
+        M_G = M_V + mu_G**2
+
+        return dict(mu=mu, mu_G=mu_G, M=M, M_V=M_V, M_G=M_G)
+
+
     def compute_L(self, num_samples=1000):
         """
         Estimates Lipschitz constant L.
@@ -40,7 +71,7 @@ class ParameterEstimator:
         eigenvalues = np.linalg.eigvalsh(H)
         return max(min(eigenvalues), 1e-6)
 
-    def estimate_parameters(self):
+    def estimate_parameters(self,use_empirical_noise=True):
         """
         Estimates gradient variance and smoothness parameters.
 
@@ -49,16 +80,12 @@ class ParameterEstimator:
         """
         L = self.compute_L()
         c = self.compute_c()
-        mu = 1
-        mu_G = 1
-        sigma2 = self.noise ** 2
-        x_norms_squared = np.sum(self.X ** 2, axis=1)
-        E_x_norm_sq = np.mean(x_norms_squared)
-        x_norms_fourth = x_norms_squared ** 2
-        E_x_norm_fourth = np.mean(x_norms_fourth)
-        M = sigma2 * E_x_norm_sq
-        w_diff = self.w_init - self.w_star
-        E_w_minus_A_sq = np.mean(w_diff ** 2)
-        M_V = E_w_minus_A_sq * E_x_norm_fourth
-        M_G = M_V + mu_G ** 2
-        return dict(L=L, c=c, mu=mu, mu_G=mu_G, M=M, M_V=M_V, M_G=M_G)
+
+        if use_empirical_noise:
+            sigma2 = self.compute_empirical_noise()
+        else:
+            sigma2 = self.noise ** 2  # for synthetic experiments
+
+        moment_stats = self.empirical_moments(w=self.w_init)
+        moment_stats['M'] = sigma2 * np.mean(np.sum(self.X ** 2, axis=1)) 
+        return dict(L=L, c=c, **moment_stats)
