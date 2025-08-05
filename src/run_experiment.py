@@ -52,9 +52,9 @@ def run_experiment(dataset, mode, **kwargs):
 
     # Convex sample complexity
     elif mode == "convex_sample":
-        degree = kwargs.get("degree", 3)
+        degree = kwargs.get("degree", 2)
         X_poly_full = transform_to_polynomial(X_raw, degree=degree, normalize=True)
-        for frac in kwargs.get("fracs", [0.05, 0.1, 0.2, 0.5, 1.0]):
+        for frac in kwargs.get("fracs", [0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.75, 0.8, 0.9, 1.0]):
             n = int(len(X_poly_full) * frac)
             X_train, X_test, y_train, y_test = train_test_split(X_poly_full[:n], y[:n], test_size=0.3)
 
