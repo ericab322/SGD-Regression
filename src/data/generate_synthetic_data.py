@@ -51,7 +51,7 @@ def generate_training_data_unfixed(m=100, n=2, noise=0.01, model_type='linear', 
     return X, None, y, {'A': A, 'b': b}
 
 
-def generate_training_data_fixed(m=100, n=2, noise=0.01):
+def generate_training_data_fixed(m=100, n=2):
     """
     Generates data with fixed coefficients for:
         - Linear: y = Ax + b + noise
@@ -69,43 +69,52 @@ def generate_training_data_fixed(m=100, n=2, noise=0.01):
     """
     X = np.random.normal(loc=0, scale=1, size=(m, n))
     A = 0.01 * np.arange(1, n + 1)
-    b = 1.0                       
-    eta_i = np.random.normal(0, noise, size=(m,))
-    y = X @ A + b + eta_i
+    b = 1.0               
+    y = X @ A + b
     true_coefficients = {'A': A, 'b': b}
     return X, y, true_coefficients
 
-def transform_to_polynomial(X, degree=2, normalize=True):
+def transform_to_polynomial_train(X, degree=2):
     """
     Transforms input data to polynomial features of a given degree.
     Args:
         X: Input data
         degree: Degree of polynomial features
-        normalize: If True, normalize the features
     Returns:
         X_poly: Transformed polynomial features
     """
     poly = PolynomialFeatures(degree=degree, include_bias=False)
     X_poly = poly.fit_transform(X)
-    if normalize:
-        X_poly = (X_poly - np.mean(X_poly, axis=0)) / np.std(X_poly, axis=0)
-    return X_poly
+    mean = np.mean(X_poly, axis=0)
+    std = np.std(X_poly, axis=0)
+    std[std == 0] = 1  
+    X_poly_norm = (X_poly - mean) / std
+    return X_poly_norm, poly, mean, std
+
+def transform_to_polynomial_test(X, poly, mean, std):
+    X_poly = poly.transform(X)
+    X_poly_norm = (X_poly - mean) / std
+    return X_poly_norm
     
-def transform_to_nonlinear(X, func=np.sin):
+    
+def make_nonlinear_dataset(n=20000, d=6, noise_std=0.1, seed=0):
     """
-    Transforms input data to nonlinear features using a given function.
-    Args:
-        X: Input data
-        func: Nonlinear function to apply
-    Returns
-        X_nonlinear: Transformed nonlinear features
+    X ~ N(0, I), w ~ N(0, 1/sqrt(d)), y = f(X w) + eps
+    kind: 'sin' or 'log'
     """
-    return func(X)
+    rng = np.random.default_rng(seed)
+    X = rng.standard_normal(size=(n, d))
+    w = rng.standard_normal(size=(d,)) / np.sqrt(d)
+
+    z = X @ w
+
+    y = np.sin(z) + noise_std * rng.standard_normal(size=n)
+    return X.astype(np.float64), y.astype(np.float64)
 
 def generate_sphere_data(m, d, degree=3, noise=0.01):
     X = np.random.randn(m, d)
     X /= np.linalg.norm(X, axis=1, keepdims=True)  
-    X_poly = transform_to_polynomial(X, degree=degree, normalize=False)
+    X_poly = transform_to_polynomial_train(X, degree=degree)
 
     A = 0.01 * np.arange(1, X_poly.shape[1] + 1)
     b = 1.0

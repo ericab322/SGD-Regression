@@ -40,25 +40,50 @@ class ParameterEstimator:
         return dict(mu=mu, mu_G=mu_G, M=M, M_V=M_V, M_G=M_G)
 
 
-    def compute_L(self, num_samples=1000):
+    def compute_L(self, eps=1e-4, trials=50, quantile=0.95,
+              safety_factor=2.0, min_L=1e-6, max_L=1e6):
         """
-        Estimates Lipschitz constant L.
+        Estimates Lipschitz constant L for gradient of objective F.
+        Works for polynomial regression and neural networks.
 
-        Args:
-            num_samples: Samples for estimating Lipschitz constant.
-
-        Returns:
-            Lipschitz constant.
+        eps: perturbation size for empirical method.
+        trials: number of perturbations for empirical method.
+        quantile: quantile of observed local Lipschitz ratios.
+        safety_factor: multiplier for stability.
+        min_L, max_L: clamps for stability.
         """
-        n = self.w_init.shape[0]
-        L_vals = []
-        for _ in range(num_samples):
-            w1, w2 = np.random.randn(n), np.random.randn(n)
-            g1 = self.model.grad_F(w1)
-            g2 = self.model.grad_F(w2)
-            if np.linalg.norm(w1 - w2) > 1e-8:
-                L_vals.append(np.linalg.norm(g1 - g2) / np.linalg.norm(w1 - w2))
-        return max(L_vals) if L_vals else 1.
+
+        def spectral_from_X(X):
+            # Spectral norm of Hessian: (1/m) X^T X
+            m = X.shape[0]
+            sigma_max = np.linalg.svd(X, compute_uv=False)[0]
+            return (sigma_max ** 2) / m
+
+        def empirical_local(model, w_ref):
+            g_ref = model.grad_F(w_ref)
+            ratios = []
+            for _ in range(trials):
+                u = np.random.randn(*w_ref.shape)
+                u /= (np.linalg.norm(u) + 1e-12)
+                u *= eps
+                g2 = model.grad_F(w_ref + u)
+                ratio = np.linalg.norm(g2 - g_ref) / (np.linalg.norm(u) + 1e-12)
+                ratios.append(ratio)
+            return float(np.quantile(np.array(ratios), quantile))
+
+        # --- Detect model type ---
+        if hasattr(self.model, "X") and hasattr(self.model, "w_star"):
+            # Likely polynomial regression
+            L_est = spectral_from_X(self.model.X)
+        else:
+            # Likely neural network or other nonlinear model
+            w_ref = self.model.initialize_weights()
+            L_est = empirical_local(self.model, w_ref)
+
+        # --- Safety clamps ---
+        L_est = max(min_L, min(L_est, max_L))
+        return L_est * safety_factor
+
     
     def compute_c(self):
         """

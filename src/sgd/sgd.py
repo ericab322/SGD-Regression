@@ -65,8 +65,10 @@ class SGD:
                 if iteration % 100 == 0 or iteration == 0:
                     obj_val = self.model.F(w)
                     grad_norm = np.linalg.norm(self.model.grad_F(w)) ** 2
+                    dist = np.linalg.norm(w - self.model.w_star) ** 2
                     obj_history.append(obj_val)
                     grad_norm_history.append(grad_norm)
+                    dist_to_opt_history.append(dist)
                 iteration += 1
 
         return w, np.array(obj_history), np.array(grad_norm_history), np.array(dist_to_opt_history)

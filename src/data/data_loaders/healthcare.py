@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-from src.data.generate_synthetic_data import transform_to_polynomial
 
 def load_healthcare_data(path=None):
     if path is None:
