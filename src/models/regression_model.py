@@ -74,7 +74,7 @@ class RegressionModel:
         """
         return (1 / self.m) * (self.X.T @ (self.X @ w - self.y))
 
-    def stochastic_grad(self, w, X_sample, y_sample):
+    def stochastic_grad(self, w, i):
         """
         Stochastic gradient for a single sample.
 
@@ -86,8 +86,8 @@ class RegressionModel:
         Returns:
             Gradient vector of shape (n,).
         """
-        x = X_sample[0]
-        y = y_sample[0]
+        x = self.X[i]
+        y = self.y[i]
         return (x @ w - y) * x
 
     def mini_batch_grad(self, w, batch_size, X_batch, y_batch):

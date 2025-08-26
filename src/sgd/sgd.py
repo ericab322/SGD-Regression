@@ -58,7 +58,8 @@ class SGD:
                 if self.batch_size > 1:
                     g_k = self.model.mini_batch_grad(w, self.batch_size, X_batch, y_batch)
                 else:
-                    g_k = self.model.stochastic_grad(w, X_batch, y_batch)
+                    i = batch_indices[0]
+                    g_k = self.model.stochastic_grad(w, i)
 
                 w -= alpha_k * g_k
 
