@@ -1,4 +1,3 @@
-# run.py
 import os
 os.environ.setdefault("OMP_NUM_THREADS", "1")
 os.environ.setdefault("MKL_NUM_THREADS", "1")
@@ -29,9 +28,10 @@ def parse_args():
     p.add_argument("--epochs", type=int, default=10)
     p.add_argument("--degrees", type=int, nargs="*", default=[1, 2, 3, 4, 5])
     p.add_argument("--methods", nargs="*", default=["fixed", "halving", "diminishing"])
-    p.add_argument("--fracs", type=float, nargs="*", default=[0.0001, 0.0005, 0.001,
-                                                              0.005, 0.01, 0.025, 0.05,
-                                                              0.1, 0.15, 0.2, 0.25, 0.5, 1.0])
+    p.add_argument("--fracs", type=float, nargs="*", default=[
+        0.0001, 0.0005, 0.001, 0.005, 0.01, 0.025, 0.05,
+        0.1, 0.15, 0.2, 0.25, 0.5, 1.0
+    ])
     p.add_argument("--hidden_sizes", type=int, nargs="*", default=[1, 5, 10, 20, 50, 100])
     p.add_argument("--width", type=int, default=50)
     p.add_argument("--degree", type=int, default=3)
@@ -47,13 +47,9 @@ def main():
     run_root = Path(args.outdir) / f"{args.dataset}_{args.mode}_{ts}"
     run_root.mkdir(parents=True, exist_ok=True)
 
-    # Save manifest
     (run_root / "manifest.json").write_text(json.dumps(vars(args), indent=2))
 
-    # Path for aggregated JSONL
-    records_path = run_root / "records.jsonl"
-
-    all_records = []  # collect all runs for CSV
+    all_records = []
 
     for seed in args.seeds:
         print(f"\n=== Running seed {seed} ===")
@@ -78,19 +74,16 @@ def main():
             delimiter=args.delimiter,
             header=args.header,
         )
+        all_records.extend(recs)
 
-        # Append to JSONL (line per record)
-        with records_path.open("a") as f:
-            for r in recs:
-                f.write(json.dumps(r) + "\n")
-                all_records.append(r)
-
-    # Auto-compile into CSV
+    # one compiled csv
     if all_records:
         df = pd.DataFrame(all_records)
-        csv_path = run_root / "all_records.csv"
-        df.to_csv(csv_path, index=False)
-        print(f"\n✅ Saved {len(df)} records to {csv_path}")
+        family_dir = Path(args.outdir) / f"{args.dataset}_{args.mode}"
+        family_dir.mkdir(parents=True, exist_ok=True)
+        family_csv = family_dir / "all_records.csv"
+        df.to_csv(family_csv, index=False)  
+        print(f"\n📦 Saved {len(df)} records to {family_csv}")
 
 
 if __name__ == "__main__":
